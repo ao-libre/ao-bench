@@ -270,6 +270,193 @@ export class AOBot {
 
   // ─── Private helpers ───────────────────────────────────────────────────────
 
+
+  // ── Extended player actions ──────────────────────────────────────────────
+
+  doubleClick(x: number, y: number): Promise<BotApiOkResponse> {
+    return this.sendAction("doubleClick", { x, y });
+  }
+  changeHeading(heading: Heading): Promise<BotApiOkResponse> {
+    return this.sendAction("changeHeading", { heading });
+  }
+  workLeftClick(x: number, y: number): Promise<BotApiOkResponse> {
+    return this.sendAction("workLeftClick", { x, y });
+  }
+  useSpellMacro(): Promise<BotApiOkResponse> {
+    return this.sendAction("useSpellMacro", {});
+  }
+  moveItem(from: number, to: number): Promise<BotApiOkResponse> {
+    return this.sendAction("moveItem", { from, to });
+  }
+  commerceStart(): Promise<BotApiOkResponse> {
+    return this.sendAction("commerceStart", {});
+  }
+  commerceBuy(slot: number, amount: number): Promise<BotApiOkResponse> {
+    return this.sendAction("commerceBuy", { slot, amount });
+  }
+  commerceSell(slot: number, amount: number): Promise<BotApiOkResponse> {
+    return this.sendAction("commerceSell", { slot, amount });
+  }
+  commerceEnd(): Promise<BotApiOkResponse> {
+    return this.sendAction("commerceEnd", {});
+  }
+  userCommerceOffer(slot: number, amount = 1, gold = 0): Promise<BotApiOkResponse> {
+    return this.sendAction("userCommerceOffer", { slot, amount, gold });
+  }
+  userCommerceOk(): Promise<BotApiOkResponse> {
+    return this.sendAction("userCommerceOk", {});
+  }
+  userCommerceReject(): Promise<BotApiOkResponse> {
+    return this.sendAction("userCommerceReject", {});
+  }
+  userCommerceEnd(): Promise<BotApiOkResponse> {
+    return this.sendAction("userCommerceEnd", {});
+  }
+  bankStart(): Promise<BotApiOkResponse> {
+    return this.sendAction("bankStart", {});
+  }
+  bankDeposit(slot: number, amount: number): Promise<BotApiOkResponse> {
+    return this.sendAction("bankDeposit", { slot, amount });
+  }
+  bankExtractItem(slot: number, amount: number): Promise<BotApiOkResponse> {
+    return this.sendAction("bankExtractItem", { slot, amount });
+  }
+  bankDepositGold(amount: number): Promise<BotApiOkResponse> {
+    return this.sendAction("bankDepositGold", { amount });
+  }
+  bankExtractGold(amount: number): Promise<BotApiOkResponse> {
+    return this.sendAction("bankExtractGold", { amount });
+  }
+  bankEnd(): Promise<BotApiOkResponse> {
+    return this.sendAction("bankEnd", {});
+  }
+  craftBlacksmith(item: number): Promise<BotApiOkResponse> {
+    return this.sendAction("craftBlacksmith", { item });
+  }
+  craftCarpenter(item: number): Promise<BotApiOkResponse> {
+    return this.sendAction("craftCarpenter", { item });
+  }
+  train(npc: number, skill: SkillName): Promise<BotApiOkResponse> {
+    return this.sendAction("train", { npc, skill });
+  }
+  partyCreate(): Promise<BotApiOkResponse> {
+    return this.sendAction("partyCreate", {});
+  }
+  partyJoin(leader: string): Promise<BotApiOkResponse> {
+    return this.sendAction("partyJoin", { leader });
+  }
+  partyLeave(): Promise<BotApiOkResponse> {
+    return this.sendAction("partyLeave", {});
+  }
+  partyMessage(message: string): Promise<BotApiOkResponse> {
+    return this.sendAction("partyMessage", { message });
+  }
+  guildMessage(message: string): Promise<BotApiOkResponse> {
+    return this.sendAction("guildMessage", { message });
+  }
+  shareNpc(): Promise<BotApiOkResponse> {
+    return this.sendAction("shareNpc", {});
+  }
+  stopSharingNpc(): Promise<BotApiOkResponse> {
+    return this.sendAction("stopSharingNpc", {});
+  }
+  resucitate(): Promise<BotApiOkResponse> {
+    return this.sendAction("resucitate", {});
+  }
+  heal(): Promise<BotApiOkResponse> {
+    return this.sendAction("heal", {});
+  }
+  home(): Promise<BotApiOkResponse> {
+    return this.sendAction("home", {});
+  }
+  enlist(): Promise<BotApiOkResponse> {
+    return this.sendAction("enlist", {});
+  }
+  changeDescription(desc: string): Promise<BotApiOkResponse> {
+    return this.sendAction("changeDescription", { desc });
+  }
+  dragSpell(from: number, to: number): Promise<BotApiOkResponse> {
+    return this.sendAction("dragSpell", { from, to });
+  }
+
+  // ── GM actions (require GM privileges on the character) ──────────────────
+
+  gmGoToChar(target: string): Promise<BotApiOkResponse> {
+    return this.sendAction("gmGoToChar", { target });
+  }
+  gmWarpChar(target: string, map: number, x: number, y: number): Promise<BotApiOkResponse> {
+    return this.sendAction("gmWarpChar", { target, map, x, y });
+  }
+  gmWarpMe(): Promise<BotApiOkResponse> {
+    return this.sendAction("gmWarpMe", {});
+  }
+  gmSummon(target: string): Promise<BotApiOkResponse> {
+    return this.sendAction("gmSummon", { target });
+  }
+  gmSpawn(npc: number): Promise<BotApiOkResponse> {
+    return this.sendAction("gmSpawn", { npc });
+  }
+  gmKillNpc(npc: number): Promise<BotApiOkResponse> {
+    return this.sendAction("gmKillNpc", { npc });
+  }
+  gmKillAllNearby(): Promise<BotApiOkResponse> {
+    return this.sendAction("gmKillAllNearby", {});
+  }
+  gmCreateItem(item: number, amount = 1): Promise<BotApiOkResponse> {
+    return this.sendAction("gmCreateItem", { item, amount });
+  }
+  gmDestroyItems(): Promise<BotApiOkResponse> {
+    return this.sendAction("gmDestroyItems", {});
+  }
+  gmRevive(target: string): Promise<BotApiOkResponse> {
+    return this.sendAction("gmRevive", { target });
+  }
+  gmKick(target: string): Promise<BotApiOkResponse> {
+    return this.sendAction("gmKick", { target });
+  }
+  gmBan(target: string, reason: string): Promise<BotApiOkResponse> {
+    return this.sendAction("gmBan", { target, reason });
+  }
+  gmSilence(target: string): Promise<BotApiOkResponse> {
+    return this.sendAction("gmSilence", { target });
+  }
+  gmJail(target: string): Promise<BotApiOkResponse> {
+    return this.sendAction("gmJail", { target });
+  }
+  gmInvisible(): Promise<BotApiOkResponse> {
+    return this.sendAction("gmInvisible", {});
+  }
+  gmMessage(message: string): Promise<BotApiOkResponse> {
+    return this.sendAction("gmMessage", { message });
+  }
+  gmServerMessage(message: string): Promise<BotApiOkResponse> {
+    return this.sendAction("gmServerMessage", { message });
+  }
+  gmRain(): Promise<BotApiOkResponse> {
+    return this.sendAction("gmRain", {});
+  }
+  gmTeleportCreate(map: number, x: number, y: number, destMap: number, destX: number, destY: number): Promise<BotApiOkResponse> {
+    return this.sendAction("gmTeleportCreate", { map, x, y, destMap, destX, destY });
+  }
+  gmEditChar(target: string, field: number, value: number): Promise<BotApiOkResponse> {
+    return this.sendAction("gmEditChar", { target, field, value });
+  }
+  gmSetDesc(target: string, desc: string): Promise<BotApiOkResponse> {
+    return this.sendAction("gmSetDesc", { target, desc });
+  }
+  gmCreateNpc(npc: number): Promise<BotApiOkResponse> {
+    return this.sendAction("gmCreateNpc", { npc });
+  }
+  gmMakeDumb(target: string): Promise<BotApiOkResponse> {
+    return this.sendAction("gmMakeDumb", { target });
+  }
+  gmMakeDumbNoMore(target: string): Promise<BotApiOkResponse> {
+    return this.sendAction("gmMakeDumbNoMore", { target });
+  }
+  gmRequestCharInfo(target: string): Promise<BotApiOkResponse> {
+    return this.sendAction("gmRequestCharInfo", { target });
+  }
+
   private sendAction(
     action: string,
     params?: Record<string, unknown>
