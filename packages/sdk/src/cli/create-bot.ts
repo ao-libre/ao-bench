@@ -16,6 +16,18 @@ export function validateUsername(username: string): string | null {
   return null;
 }
 
+
+// ─── Random name generator ────────────────────────────────────────────────────
+
+export function generateRandomName(): string {
+  const chars = "abcdefghijklmnopqrstuvwxyz0123456789";
+  let name = "";
+  for (let i = 0; i < 9; i++) {
+    name += chars[Math.floor(Math.random() * chars.length)];
+  }
+  return name;
+}
+
 // ─── File generators ─────────────────────────────────────────────────────────
 
 export function generateBotEnv(username: string): string {
@@ -96,13 +108,17 @@ const isMain =
 if (isMain) {
   const args = process.argv.slice(2);
 
-  if (args.length !== 1) {
-    console.error("Usage: create-bot <username>");
-    console.error("  username: alphanumeric, max 12 characters");
+  let username: string;
+  if (args.length === 0) {
+    username = generateRandomName();
+    console.warn(`No username provided, generated: ${username}`);
+  } else if (args.length === 1) {
+    username = args[0] as string;
+  } else {
+    console.error("Usage: create-bot [username]");
+    console.error("  username: alphanumeric, max 12 characters (generated if omitted)");
     process.exit(1);
   }
-
-  const username = args[0] as string;
   const validationError = validateUsername(username);
   if (validationError !== null) {
     console.error(validationError);

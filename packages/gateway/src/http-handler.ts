@@ -56,7 +56,7 @@ export function createHttpHandler(sessions: SessionManager): Handler {
         sendJson(res, 404, { error: "Bot not found" });
         return;
       }
-      sendJson(res, 200, state);
+      sendJson(res, 200, { state, stateAge: Date.now() - (state.timestamp ?? 0) });
       return;
     }
 
