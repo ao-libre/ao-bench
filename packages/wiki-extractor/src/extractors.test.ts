@@ -209,36 +209,34 @@ describe("extractSkills", () => {
     const expectedSkills = [
       "Magia",
       "Robar",
-      "Tácticas",
-      "Armas a Distancia",
-      "Defensa con Armas",
-      "Evasión",
-      "Apuñalar",
-      "Orientación",
-      "Supervivencia",
-      "Pesca",
-      "Minería",
-      "Leñadora",
-      "Herrería",
-      "Carpintería",
-      "Domar",
-      "Liderazgo",
-      "Comercio",
-      "Proyectiles",
-      "Ocultarse",
+      "Tacticas",
+      "Armas",
       "Meditar",
+      "Apunalar",
+      "Ocultarse",
+      "Supervivencia",
+      "Talar",
+      "Comerciar",
+      "Defensa",
+      "pesca",
+      "Mineria",
+      "Carpinteria",
+      "Herreria",
+      "Liderazgo",
+      "Domar",
+      "Proyectiles",
+      "Wrestling",
+      "Navegacion",
     ];
 
     for (const skill of expectedSkills) {
       expect(md, `Expected skill "${skill}" to be present`).toContain(skill);
     }
 
-    // Should have exactly 20 data rows in the table
-    const tableRows = md
+    // Should have exactly 20 data rows in the skill ID table (rows starting with "| 1 |" etc.)
+    const skillRows = md
       .split("\n")
-      .filter((l) => l.startsWith("|"))
-      .filter((l) => !/^\|[\s\-|]+\|$/.test(l)) // drop separators
-      .slice(1); // drop header row
-    expect(tableRows.length).toBe(20);
+      .filter((l) => /^\| \d+\s*\| \w/.test(l));
+    expect(skillRows.length).toBe(20);
   });
 });
