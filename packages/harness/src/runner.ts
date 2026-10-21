@@ -57,7 +57,11 @@ export async function runBenchmark(config: HarnessConfig): Promise<RunResult> {
   // Paths relative to this file (packages/harness/src/)
   const harnessRoot = join(__dirname, "..");
   const taskFile = join(harnessRoot, "tasks", `${config.task}.yaml`);
-  const wikiDir = join(harnessRoot, "../../wiki-extractor/wiki");
+  // Wiki files: prefer repo root wiki/ (committed), fall back to wiki-extractor output
+  const repoRoot = join(harnessRoot, "../../..");
+  const wikiDirRoot = join(repoRoot, "wiki");
+  const wikiDirExtractor = join(harnessRoot, "../../wiki-extractor/wiki");
+  const wikiDir = existsSync(wikiDirRoot) ? wikiDirRoot : wikiDirExtractor;
   const sdkReadmePath = join(harnessRoot, "../../sdk/README.md");
   const labLogPath = join(harnessRoot, "lab_log.md");
 

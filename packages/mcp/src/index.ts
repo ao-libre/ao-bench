@@ -26,7 +26,11 @@ import path from "node:path";
 // ─────────────────────────────────────────────────────────────────────────────
 
 const GATEWAY_URL = process.env["GATEWAY_URL"] ?? "http://localhost:7780";
-const WIKI_DIR = process.env["WIKI_DIR"] ?? "./wiki";
+import { resolve } from "node:path";
+
+// Wiki files live at the repo root wiki/ directory (3 levels up from packages/mcp/src/)
+const _mcpSrcDir = resolve("packages/mcp/src"); // fallback
+const WIKI_DIR = process.env["WIKI_DIR"] ?? resolve("wiki");
 const BOT_PASSWORD = process.env["BOT_PASSWORD"] ?? "aobench";
 const ACTION_TIMEOUT_MS = 10_000;
 
