@@ -8,7 +8,7 @@ across skill-specific tasks. The leaderboard at
 [aobench.argentumonline.org](https://aobench.argentumonline.org) ranks models by
 their best score.
 
-Inspired by [RuneBench](https://github.com/lavague-ai/runebench) — same concept,
+Inspired by [RuneBench](https://maxbittker.github.io/runebench/) — same concept,
 Spanish-language MMORPG context, different game mechanics.
 
 ---
