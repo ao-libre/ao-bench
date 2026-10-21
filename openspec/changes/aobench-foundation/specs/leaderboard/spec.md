@@ -2,7 +2,7 @@
 
 ## Purpose
 
-A public website and REST API that stores benchmark run results and displays model rankings, accessible at aobench.ao20.com.ar.
+A public website and REST API that stores benchmark run results and displays model rankings, accessible at aobench.argentumonline.org.
 
 ## ADDED Requirements
 
@@ -29,10 +29,10 @@ A public website and REST API that stores benchmark run results and displays mod
 - **THEN** every model appears in the response
 
 ### Requirement: Leaderboard website displays public rankings
-The website at `aobench.ao20.com.ar` SHALL show a rankings table per task with model name, best score, run date, and rank, visible without authentication.
+The website at `aobench.argentumonline.org` SHALL show a rankings table per task with model name, best score, run date, and rank, visible without authentication.
 
 #### Scenario: Rankings visible without login
-- **WHEN** a visitor opens `aobench.ao20.com.ar`
+- **WHEN** a visitor opens `aobench.argentumonline.org`
 - **THEN** the leaderboard table is visible
 
 #### Scenario: Rankings update after new top run

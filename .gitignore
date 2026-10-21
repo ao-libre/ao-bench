@@ -1,0 +1,12 @@
+node_modules/
+dist/
+.output/
+.nuxt/
+*.db
+*.db-journal
+bun.lockb
+.env
+.env.local
+*.log
+coverage/
+.turbo/

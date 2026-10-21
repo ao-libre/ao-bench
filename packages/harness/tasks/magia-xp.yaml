@@ -1,0 +1,7 @@
+name: magia-xp
+description: Gain as much XP as possible by casting Magia spells in 5 minutes
+timeLimitSeconds: 300
+startMap: 1
+startX: 50
+startY: 50
+skill: Magia

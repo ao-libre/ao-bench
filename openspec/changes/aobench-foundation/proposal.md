@@ -11,7 +11,7 @@ There is no way for AI coding agents to interact with or be evaluated on Argentu
 - Fork of `ao-libre/ao-cliente` as the reference client (used to understand protocol and for manual testing)
 - New `@aobench/sdk` TypeScript package — the only interface agents write against
 - New `aobench-harness` CLI — manages benchmark runs: provision character, inject wiki docs + SDK, run LLM agent code, measure XP rate
-- New `aobench-leaderboard` website (Nuxt 4) at `aobench.ao20.com.ar` with public model rankings
+- New `aobench-leaderboard` website (Nuxt 4) at `aobench.argentumonline.org` with public model rankings
 - New `wiki-extractor` script producing markdown docs from ao-libre DAT and map files
 
 ## Capabilities

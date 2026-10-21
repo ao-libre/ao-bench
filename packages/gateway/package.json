@@ -1,0 +1,21 @@
+{
+  "name": "@aobench/gateway",
+  "version": "0.1.0",
+  "description": "WebSocket/HTTP gateway between BotAPI.bas and the aobench SDK",
+  "private": true,
+  "scripts": {
+    "start": "npx tsx src/index.ts",
+    "dev": "npx tsx watch src/index.ts",
+    "typecheck": "tsc --noEmit",
+    "test": "npx vitest run",
+    "lint": "eslint src/**/*.ts"
+  },
+  "dependencies": {
+    "@aobench/sdk": "*",
+    "ws": "^8.18.0"
+  },
+  "devDependencies": {
+    "@types/ws": "^8.5.13",
+    "typescript": "^5.6.3"
+  }
+}

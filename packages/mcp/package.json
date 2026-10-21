@@ -1,0 +1,21 @@
+{
+  "name": "@aobench/mcp",
+  "version": "0.1.0",
+  "description": "MCP server exposing aobench bot control as tools",
+  "private": true,
+  "scripts": {
+    "start": "npx tsx src/index.ts",
+    "dev": "npx tsx watch src/index.ts",
+    "typecheck": "tsc --noEmit",
+    "test": "npx vitest run --passWithNoTests",
+    "lint": "eslint src/**/*.ts"
+  },
+  "dependencies": {
+    "@aobench/sdk": "*",
+    "@modelcontextprotocol/sdk": "^1.0.4"
+  },
+  "devDependencies": {
+    "@types/node": "^22.0.0",
+    "typescript": "^5.6.3"
+  }
+}

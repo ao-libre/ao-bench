@@ -1,0 +1,28 @@
+{
+  "name": "@aobench/sdk",
+  "version": "0.1.0",
+  "description": "TypeScript SDK for aobench bot scripts",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "import": "./dist/index.js",
+      "types": "./dist/index.d.ts"
+    }
+  },
+  "bin": {
+    "create-bot": "./src/cli/create-bot.ts",
+    "bot-cli": "./src/cli/bot-cli.ts"
+  },
+  "scripts": {
+    "build": "npx tsc",
+    "typecheck": "tsc --noEmit",
+    "test": "npx vitest run",
+    "lint": "eslint src/**/*.ts"
+  },
+  "devDependencies": {
+    "@types/node": "^22.0.0",
+    "typescript": "^5.6.3",
+    "vitest": "^3.0.0"
+  }
+}

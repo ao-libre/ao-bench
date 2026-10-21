@@ -44,7 +44,7 @@ Three developer-facing CLI tools — `create-bot` (scaffolds a ready-to-run bot 
 - **THEN** the updated state is printed to stdout
 
 ### Requirement: bug-report submits a report from a script
-`await sdk.bugReport("description of the issue")` SHALL POST a bug report to `aobench.ao20.com.ar/api/bugs` including the description, current WorldState, SDK version, and a recent action log.
+`await sdk.bugReport("description of the issue")` SHALL POST a bug report to `aobench.argentumonline.org/api/bugs` including the description, current WorldState, SDK version, and a recent action log.
 
 #### Scenario: Bug report submitted from within a script
 - **WHEN** `await bot.bugReport("attack() did not initiate combat when NPC was targeted")` is called

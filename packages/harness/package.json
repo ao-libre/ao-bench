@@ -1,0 +1,23 @@
+{
+  "name": "@aobench/harness",
+  "version": "0.1.0",
+  "description": "Benchmark CLI — provisions characters, runs agents, measures XP",
+  "private": true,
+  "type": "module",
+  "bin": {
+    "aobench": "./src/cli.ts"
+  },
+  "scripts": {
+    "start": "npx tsx src/cli.ts",
+    "typecheck": "tsc --noEmit",
+    "test": "npx vitest run",
+    "lint": "eslint src/**/*.ts"
+  },
+  "dependencies": {
+    "@aobench/sdk": "*"
+  },
+  "devDependencies": {
+    "@types/node": "^22.0.0",
+    "typescript": "^5.6.3"
+  }
+}
