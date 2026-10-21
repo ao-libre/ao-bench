@@ -128,8 +128,8 @@ describe("createHttpHandler", () => {
     });
 
     expect(mock.statusCode).toBe(200);
-    const parsed = JSON.parse(mock.body) as { charname?: string };
-    expect(parsed.charname).toBe("Bot1");
+    const parsed = JSON.parse(mock.body) as { state?: { charname?: string }; stateAge?: number };
+    expect(parsed.state?.charname).toBe("Bot1");
   });
 
   it("GET /chat/:bot returns empty array when no chat exists", async () => {

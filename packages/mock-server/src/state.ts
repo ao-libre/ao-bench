@@ -3,7 +3,8 @@ import type {
   NearbyNpc,
   Skills,
   SkillName,
-  ALL_SKILLS,
+  InventorySlot,
+  StatusEffect,
 } from "../../sdk/src/types.js";
 
 // Re-export from sdk types to avoid circular dep issues — copy the array locally.
@@ -28,17 +29,25 @@ export interface BotState {
   npcHp: number;
   /** Accumulated XP gains to apply. */
   pendingXp: number;
+  /** Charnames of party members. */
+  partyMembers: string[];
+  /** Whether an NPC commerce window is open. */
+  isInCommerce: boolean;
+  /** Whether the bank window is open. */
+  isInBank: boolean;
+  /** Whether a player-to-player trade is active. */
+  isInUserCommerce: boolean;
+  /** Items offered in the current player trade. */
+  commerceOffer: InventorySlot[];
+  /** Bank inventory slots. */
+  bank: InventorySlot[];
+  /** Status effects (mirrors world.statusEffects for convenience). */
+  statusEffects: StatusEffect[];
+  /** Whether the bot has GM privileges. */
+  isGM: boolean;
+  /** NPCs spawned by gmSpawn. */
+  spawnedNpcs: NearbyNpc[];
 }
-
-const MOCK_NPC: NearbyNpc = {
-  id: 1,
-  name: "Goblin",
-  x: 51,
-  y: 50,
-  hp: 80,
-  maxHp: 80,
-  type: 5,
-};
 
 export function makeDefaultState(charname: string): BotState {
   const world: WorldState = {
@@ -60,10 +69,26 @@ export function makeDefaultState(charname: string): BotState {
       { slot: 1, itemId: 21, name: "Espada de Hierro", amount: 1, equipped: true },
       { slot: 2, itemId: 51, name: "Pocion de Vida", amount: 5, equipped: false },
     ],
-    nearbyNpcs: [{ ...MOCK_NPC }],
+    nearbyNpcs: [
+      { id: 1, name: "Goblin", x: 51, y: 50, hp: 80, maxHp: 80, type: 5 },
+      { id: 2, name: "Mercader", x: 53, y: 50, hp: 100, maxHp: 100, type: 0 },
+    ],
     nearbyPlayers: [],
     statusEffects: [],
     timestamp: Date.now(),
   };
-  return { world, npcHp: MOCK_NPC.maxHp, pendingXp: 0 };
+  return {
+    world,
+    npcHp: 80,
+    pendingXp: 0,
+    partyMembers: [],
+    isInCommerce: false,
+    isInBank: false,
+    isInUserCommerce: false,
+    commerceOffer: [],
+    bank: [{ slot: 1, itemId: 100, name: "Oro en banco", amount: 1000, equipped: false }],
+    statusEffects: [],
+    isGM: false,
+    spawnedNpcs: [],
+  };
 }
