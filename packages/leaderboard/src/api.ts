@@ -6,11 +6,13 @@ const DEFAULT_API_KEY = 'aobench-key';
 interface RunBody {
   model: string;
   task: string;
-  xp_gained?: number;
-  xp_rate?: number;
-  duration_ms?: number;
+  // Accept both camelCase (from harness) and snake_case
+  runId?: string;
+  xpGained?: number;   xp_gained?: number;
+  xpRate?: number;     xp_rate?: number;
+  durationMs?: number; duration_ms?: number;
   success?: boolean | number;
-  error?: string;
+  error?: string | null;
   log?: string;
 }
 
@@ -53,9 +55,9 @@ export function handlePostRun(
     return { status: 400, body: { error: 'Invalid body: model and task are required' } };
   }
 
-  const runId = randomUUID();
+  const runId = body.runId ?? randomUUID();
   const stmt = db.prepare(`
-    INSERT INTO runs (id, model, task, xp_gained, xp_rate, duration_ms, success, error, log)
+    INSERT OR REPLACE INTO runs (id, model, task, xp_gained, xp_rate, duration_ms, success, error, log)
     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
   `);
 
@@ -63,9 +65,9 @@ export function handlePostRun(
     runId,
     body.model,
     body.task,
-    body.xp_gained ?? 0,
-    body.xp_rate ?? 0,
-    body.duration_ms ?? 0,
+    body.xpGained ?? body.xp_gained ?? 0,
+    body.xpRate ?? body.xp_rate ?? 0,
+    body.durationMs ?? body.duration_ms ?? 0,
     body.success ? 1 : 0,
     body.error ?? null,
     body.log ?? '',
