@@ -509,9 +509,9 @@ export class AOBot {
     return this.sendAction("moveSpell", { from, to });
   }
 
-  /** Post a message to the in-game forum. `type`: 0=general, 1=real, 2=caos. */
-  forumPost(title: string, body: string, type = 0): Promise<BotApiOkResponse> {
-    return this.sendAction("forumPost", { title, body, type });
+  /** Post a message to the in-game forum. `forumType`: 0=general, 1=real, 2=caos. */
+  forumPost(title: string, body: string, forumType = 0): Promise<BotApiOkResponse> {
+    return this.sendAction("forumPost", { title, body, forumType });
   }
 
   /** Add a player to your friends list. */

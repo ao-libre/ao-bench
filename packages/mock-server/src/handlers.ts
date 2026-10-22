@@ -557,6 +557,209 @@ export function handleRequest(req: BotApiRequest, bot: BotState): BotApiResponse
       return { ok: true };
 
     // ─────────────────────────────────────────────────────────────────────────
+    // New actions (BotAPI v2)
+    // ─────────────────────────────────────────────────────────────────────────
+
+    case "assignSkillPoints": {
+      const distribution = req["distribution"] as Record<string, number> | undefined;
+      if (!distribution) {
+        return { ok: false, error: "distribution is required" };
+      }
+      let total = 0;
+      for (const [skillName, pts] of Object.entries(distribution)) {
+        const s = bot.world.skills[skillName as SkillName];
+        if (!s) return { ok: false, error: `Unknown skill: ${skillName}` };
+        s.level = Math.min(100, s.level + pts);
+        total += pts;
+      }
+      bot.world.skillPts = Math.max(0, (bot.world.skillPts ?? 0) - total);
+      bot.world.assignedSkills = Math.min(10, (bot.world.assignedSkills ?? 0) + total);
+      return { ok: true, pointsSpent: total };
+    }
+
+    case "quest": {
+      const x = req["x"] as number | undefined;
+      const y = req["y"] as number | undefined;
+      if (typeof x !== "number" || typeof y !== "number") {
+        return { ok: false, error: "x and y are required" };
+      }
+      if (!bot.activeQuest) {
+        // First call: offer quest
+        bot.activeQuest = { questId: 1, name: "Test Quest", slot: 1, npcProgress: [{ npcId: 500, required: 3, killed: 0 }], rewardXp: 500, rewardGold: 100, requiredLevel: 1 };
+        bot.world.quests = { active: [bot.activeQuest], doneIds: bot.world.quests?.doneIds ?? [] };
+        return { ok: true, offered: "Test Quest" };
+      } else if (bot.activeQuest.npcProgress.every((p) => p.killed >= p.required)) {
+        // Second call: finish quest
+        const xpGained = bot.activeQuest.rewardXp;
+        bot.world.exp += xpGained;
+        bot.world.quests?.doneIds.push(bot.activeQuest.questId);
+        bot.world.quests = { active: [], doneIds: bot.world.quests?.doneIds ?? [] };
+        bot.activeQuest = null;
+        return { ok: true, completed: true, xpGained };
+      } else {
+        return { ok: false, error: "Quest objectives not complete" };
+      }
+    }
+
+    case "questAccept": {
+      // Quest already enrolled in mock by the quest action
+      return { ok: true };
+    }
+
+    case "questAbandon": {
+      bot.activeQuest = null;
+      bot.world.quests = { active: [], doneIds: bot.world.quests?.doneIds ?? [] };
+      return { ok: true };
+    }
+
+    case "questListRequest":
+    case "questDetailsRequest":
+      return { ok: true };
+
+    case "partyAccept": {
+      const member = req["member"] as string | undefined;
+      if (!member) return { ok: false, error: "member is required" };
+      if (!bot.partyMembers.includes(member)) bot.partyMembers.push(member);
+      return { ok: true, accepted: member };
+    }
+
+    case "partyKick": {
+      const member = req["member"] as string | undefined;
+      if (!member) return { ok: false, error: "member is required" };
+      bot.partyMembers = bot.partyMembers.filter((m) => m !== member);
+      return { ok: true, kicked: member };
+    }
+
+    case "partySetLeader": {
+      const member = req["member"] as string | undefined;
+      if (!member) return { ok: false, error: "member is required" };
+      return { ok: true, newLeader: member };
+    }
+
+    case "partyOnline":
+    case "requestPartyForm":
+      return { ok: true };
+
+    case "leaveFaction":
+      bot.world.faction = "none";
+      return { ok: true };
+
+    case "petStand":
+    case "petFollow":
+    case "releasePet":
+      return { ok: true };
+
+    case "itemUpgrade": {
+      const slot = req["slot"] as number | undefined;
+      if (typeof slot !== "number") return { ok: false, error: "slot is required" };
+      return { ok: true, upgraded: slot };
+    }
+
+    case "initCrafting":
+      return { ok: true };
+
+    case "craftsmanCreate": {
+      const item = req["item"] as number | undefined;
+      if (typeof item !== "number") return { ok: false, error: "item is required" };
+      const slot = nextFreeSlot(bot, 5);
+      bot.world.inventory.push({ slot, itemId: item, name: `Artisan #${item}`, amount: 1, equipped: false });
+      return { ok: true, created: item };
+    }
+
+    case "fightSend": {
+      const target = req["target"] as string | undefined;
+      if (!target) return { ok: false, error: "target is required" };
+      return { ok: true, challenged: target };
+    }
+
+    case "fightAccept":
+      return { ok: true };
+
+    case "userCommerceCreate": {
+      const target = req["target"] as string | undefined;
+      if (!target) return { ok: false, error: "target is required" };
+      bot.isInUserCommerce = true;
+      return { ok: true, trading: target };
+    }
+
+    case "userCommerceConfirm":
+      return { ok: true };
+
+    case "commerceChat": {
+      const msg = req["message"] as string | undefined;
+      if (!msg) return { ok: false, error: "message is required" };
+      return { ok: true, sent: msg };
+    }
+
+    case "moveBank": {
+      const slot = req["slot"] as number | undefined;
+      if (typeof slot !== "number") return { ok: false, error: "slot is required" };
+      return { ok: true, moved: slot };
+    }
+
+    case "moveSpell": {
+      const from = req["from"] as number | undefined;
+      const to = req["to"] as number | undefined;
+      if (typeof from !== "number" || typeof to !== "number") return { ok: false, error: "from and to are required" };
+      return { ok: true };
+    }
+
+    case "forumPost": {
+      const title = req["title"] as string | undefined;
+      const body = req["body"] as string | undefined;
+      if (!title || !body) return { ok: false, error: "title and body are required" };
+      return { ok: true, posted: title };
+    }
+
+    case "addAmigo": {
+      const name = req["name"] as string | undefined;
+      if (!name) return { ok: false, error: "name is required" };
+      if (!bot.amigos.includes(name)) bot.amigos.push(name);
+      return { ok: true, added: name };
+    }
+
+    case "delAmigo": {
+      const name = req["name"] as string | undefined;
+      if (!name) return { ok: false, error: "name is required" };
+      bot.amigos = bot.amigos.filter((a) => a !== name);
+      return { ok: true, removed: name };
+    }
+
+    case "onAmigos":
+      return { ok: true, online: bot.amigos };
+
+    case "msgAmigos": {
+      const msg = req["message"] as string | undefined;
+      if (!msg) return { ok: false, error: "message is required" };
+      return { ok: true, sent: msg };
+    }
+
+    case "lookProcess": {
+      const name = req["name"] as string | undefined;
+      if (!name) return { ok: false, error: "name is required" };
+      return { ok: true, info: { name, level: 1 } };
+    }
+
+    case "consultation":
+    case "online":
+      return { ok: true };
+
+    case "discord": {
+      const code = req["code"] as string | undefined;
+      if (!code) return { ok: false, error: "code is required" };
+      return { ok: true, linked: true };
+    }
+
+    case "guildFundate": {
+      const guildName = req["guildName"] as string | undefined;
+      if (!guildName) return { ok: false, error: "guildName is required" };
+      return { ok: true, founded: guildName };
+    }
+
+    case "guildFundation":
+      return { ok: true };
+
+    // ─────────────────────────────────────────────────────────────────────────
     // GM actions
     // ─────────────────────────────────────────────────────────────────────────
 

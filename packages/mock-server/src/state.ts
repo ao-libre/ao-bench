@@ -47,6 +47,10 @@ export interface BotState {
   isGM: boolean;
   /** NPCs spawned by gmSpawn. */
   spawnedNpcs: NearbyNpc[];
+  /** Friends list. */
+  amigos: string[];
+  /** Currently active quest (mock single-quest tracking). */
+  activeQuest: { questId: number; name: string; slot: number; npcProgress: { npcId: number; required: number; killed: number }[]; rewardXp: number; rewardGold: number; requiredLevel: number } | null;
 }
 
 export function makeDefaultState(charname: string): BotState {
@@ -62,19 +66,30 @@ export function makeDefaultState(charname: string): BotState {
     maxStamina: 100,
     gold: 500,
     exp: 0,
+    expNeeded: 1000,
     level: 1,
     clase: 3, // Guerrero
     skills: makeSkills(),
+    skillPts: 10,
+    assignedSkills: 0,
+    attributes: { Fuerza: 18, Agilidad: 14, Inteligencia: 10, Carisma: 12, Constitucion: 16 },
     inventory: [
       { slot: 1, itemId: 21, name: "Espada de Hierro", amount: 1, equipped: true },
       { slot: 2, itemId: 51, name: "Pocion de Vida", amount: 5, equipped: false },
     ],
+    spells: Array.from({ length: 35 }, (_, i) => i === 0 ? { slot: 1, spellId: 1, name: "Dardo Magico", minSkill: 0, manaCost: 10 } : null),
+    bank: [],
+    bankGold: 1000,
     nearbyNpcs: [
       { id: 1, name: "Goblin", x: 51, y: 50, hp: 80, maxHp: 80, type: 5 },
       { id: 2, name: "Mercader", x: 53, y: 50, hp: 100, maxHp: 100, type: 0 },
     ],
     nearbyPlayers: [],
     statusEffects: [],
+    faction: "none",
+    reputation: { npcKills: 0, playerKills: 0, citizensKilled: 0, criminalsKilled: 0 },
+    party: null,
+    quests: { active: [], doneIds: [] },
     timestamp: Date.now(),
   };
   return {
@@ -90,5 +105,7 @@ export function makeDefaultState(charname: string): BotState {
     statusEffects: [],
     isGM: false,
     spawnedNpcs: [],
+    amigos: [],
+    activeQuest: null,
   };
 }

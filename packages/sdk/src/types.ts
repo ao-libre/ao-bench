@@ -99,6 +99,24 @@ export interface NearbyPlayer {
 
 export type StatusEffect = "poisoned" | "bleeding" | "paralyzed" | "frozen" | "stunned";
 
+export interface SpellSlot {
+  slot: number;
+  spellId: number;
+  name: string;
+  minSkill: number;
+  manaCost: number;
+}
+
+export interface QuestProgress {
+  slot: number;
+  questId: number;
+  name: string;
+  requiredLevel: number;
+  npcProgress: { npcId: number; required: number; killed: number }[];
+  rewardXp: number;
+  rewardGold: number;
+}
+
 export interface WorldState {
   charname: string;
   pos: Position;
@@ -111,14 +129,25 @@ export interface WorldState {
   maxStamina: number;
   gold: number;
   exp: number;
+  expNeeded: number;
   level: number;
   /** Character class ID. */
   clase: number;
   skills: Skills;
+  skillPts: number;
+  assignedSkills: number;
+  attributes: { Fuerza: number; Agilidad: number; Inteligencia: number; Carisma: number; Constitucion: number };
   inventory: InventorySlot[];
+  spells: (SpellSlot | null)[];
+  bank: InventorySlot[];
+  bankGold: number;
   nearbyNpcs: NearbyNpc[];
   nearbyPlayers: NearbyPlayer[];
   statusEffects: StatusEffect[];
+  faction: "none" | "real" | "caos";
+  reputation: { npcKills: number; playerKills: number; citizensKilled: number; criminalsKilled: number };
+  party: { index: number; isLeader: boolean; members: string[] } | null;
+  quests: { active: QuestProgress[]; doneIds: number[] };
   /** Server timestamp in ms. */
   timestamp: number;
 }

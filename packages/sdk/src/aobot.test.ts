@@ -73,13 +73,24 @@ function makeWorldState(overrides?: Partial<WorldState>): WorldState {
     maxStamina: 100,
     gold: 0,
     exp: 0,
+    expNeeded: 1000,
     level: 1,
     clase: 3,
     skills: {} as WorldState["skills"],
+    skillPts: 10,
+    assignedSkills: 0,
+    attributes: { Fuerza: 18, Agilidad: 14, Inteligencia: 10, Carisma: 12, Constitucion: 16 },
     inventory: [],
+    spells: [],
+    bank: [],
+    bankGold: 0,
     nearbyNpcs: [],
     nearbyPlayers: [],
     statusEffects: [],
+    faction: "none",
+    reputation: { npcKills: 0, playerKills: 0, citizensKilled: 0, criminalsKilled: 0 },
+    party: null,
+    quests: { active: [], doneIds: [] },
     timestamp: Date.now(),
     ...overrides,
   };
@@ -417,5 +428,257 @@ describe("bugReport", () => {
     expect(Array.isArray(body["actionLog"])).toBe(true);
     expect((body["actionLog"] as string[]).length).toBeGreaterThan(0);
     expect((body["actionLog"] as string[])[0]).toMatch(/attack/);
+  });
+});
+
+// ─────────────────────────────────────────────────────────────────────────────
+// New action methods (BotAPI v2)
+// ─────────────────────────────────────────────────────────────────────────────
+
+describe("new action methods — correct action name and params sent", () => {
+  async function getAction(
+    fn: (bot: AOBot) => Promise<unknown>
+  ): Promise<Record<string, unknown>> {
+    const { bot, ws } = await connectBot();
+    const p = fn(bot);
+    ws.serverSend({ type: "result", ok: true });
+    await p;
+    const raw = ws.sentMessages.find((m) => {
+      const p = JSON.parse(m) as Record<string, unknown>;
+      return p["type"] === "sdk_action";
+    });
+    if (!raw) throw new Error("No sdk_action found");
+    return JSON.parse(raw) as Record<string, unknown>;
+  }
+
+  // ── Skill points ─────────────────────────────────────────────────────────
+
+  it("assignSkillPoints sends correct action and distribution", async () => {
+    const sent = await getAction((b) => b.assignSkillPoints({ Armas: 5, Defensa: 3, Tacticas: 2 }));
+    expect(sent["action"]).toBe("assignSkillPoints");
+    expect(sent["distribution"]).toEqual({ Armas: 5, Defensa: 3, Tacticas: 2 });
+  });
+
+  // ── Quests ───────────────────────────────────────────────────────────────
+
+  it("quest sends action=quest with x,y", async () => {
+    const sent = await getAction((b) => b.quest(45, 50));
+    expect(sent["action"]).toBe("quest");
+    expect(sent["x"]).toBe(45);
+    expect(sent["y"]).toBe(50);
+  });
+
+  it("questAccept sends action=questAccept", async () => {
+    const sent = await getAction((b) => b.questAccept());
+    expect(sent["action"]).toBe("questAccept");
+  });
+
+  it("questAbandon sends action=questAbandon with slot", async () => {
+    const sent = await getAction((b) => b.questAbandon(1));
+    expect(sent["action"]).toBe("questAbandon");
+    expect(sent["slot"]).toBe(1);
+  });
+
+  it("questListRequest sends action=questListRequest", async () => {
+    const sent = await getAction((b) => b.questListRequest());
+    expect(sent["action"]).toBe("questListRequest");
+  });
+
+  it("questDetailsRequest sends action=questDetailsRequest with slot", async () => {
+    const sent = await getAction((b) => b.questDetailsRequest(2));
+    expect(sent["action"]).toBe("questDetailsRequest");
+    expect(sent["slot"]).toBe(2);
+  });
+
+  // ── Party ────────────────────────────────────────────────────────────────
+
+  it("partyAccept sends action=partyAccept with member", async () => {
+    const sent = await getAction((b) => b.partyAccept("Bot2"));
+    expect(sent["action"]).toBe("partyAccept");
+    expect(sent["member"]).toBe("Bot2");
+  });
+
+  it("partyKick sends action=partyKick with member", async () => {
+    const sent = await getAction((b) => b.partyKick("Bot2"));
+    expect(sent["action"]).toBe("partyKick");
+    expect(sent["member"]).toBe("Bot2");
+  });
+
+  it("partySetLeader sends action=partySetLeader with member", async () => {
+    const sent = await getAction((b) => b.partySetLeader("Bot2"));
+    expect(sent["action"]).toBe("partySetLeader");
+    expect(sent["member"]).toBe("Bot2");
+  });
+
+  it("partyOnline sends action=partyOnline", async () => {
+    const sent = await getAction((b) => b.partyOnline());
+    expect(sent["action"]).toBe("partyOnline");
+  });
+
+  it("requestPartyForm sends action=requestPartyForm", async () => {
+    const sent = await getAction((b) => b.requestPartyForm());
+    expect(sent["action"]).toBe("requestPartyForm");
+  });
+
+  // ── Faction ──────────────────────────────────────────────────────────────
+
+  it("leaveFaction sends action=leaveFaction", async () => {
+    const sent = await getAction((b) => b.leaveFaction());
+    expect(sent["action"]).toBe("leaveFaction");
+  });
+
+  // ── Pets ─────────────────────────────────────────────────────────────────
+
+  it("petStand sends action=petStand", async () => {
+    const sent = await getAction((b) => b.petStand());
+    expect(sent["action"]).toBe("petStand");
+  });
+
+  it("petFollow sends action=petFollow", async () => {
+    const sent = await getAction((b) => b.petFollow());
+    expect(sent["action"]).toBe("petFollow");
+  });
+
+  it("releasePet sends action=releasePet", async () => {
+    const sent = await getAction((b) => b.releasePet());
+    expect(sent["action"]).toBe("releasePet");
+  });
+
+  // ── Items / crafting ─────────────────────────────────────────────────────
+
+  it("itemUpgrade sends action=itemUpgrade with slot", async () => {
+    const sent = await getAction((b) => b.itemUpgrade(3));
+    expect(sent["action"]).toBe("itemUpgrade");
+    expect(sent["slot"]).toBe(3);
+  });
+
+  it("initCrafting sends action=initCrafting", async () => {
+    const sent = await getAction((b) => b.initCrafting());
+    expect(sent["action"]).toBe("initCrafting");
+  });
+
+  it("craftsmanCreate sends action=craftsmanCreate with item", async () => {
+    const sent = await getAction((b) => b.craftsmanCreate(42));
+    expect(sent["action"]).toBe("craftsmanCreate");
+    expect(sent["item"]).toBe(42);
+  });
+
+  // ── Duels ────────────────────────────────────────────────────────────────
+
+  it("fightSend sends action=fightSend with target and gold", async () => {
+    const sent = await getAction((b) => b.fightSend("Bot2", 100));
+    expect(sent["action"]).toBe("fightSend");
+    expect(sent["target"]).toBe("Bot2");
+    expect(sent["gold"]).toBe(100);
+  });
+
+  it("fightAccept sends action=fightAccept", async () => {
+    const sent = await getAction((b) => b.fightAccept());
+    expect(sent["action"]).toBe("fightAccept");
+  });
+
+  // ── Player trade ─────────────────────────────────────────────────────────
+
+  it("userCommerceCreate sends action=userCommerceCreate with target", async () => {
+    const sent = await getAction((b) => b.userCommerceCreate("Bot2"));
+    expect(sent["action"]).toBe("userCommerceCreate");
+    expect(sent["target"]).toBe("Bot2");
+  });
+
+  it("userCommerceConfirm sends action=userCommerceConfirm", async () => {
+    const sent = await getAction((b) => b.userCommerceConfirm());
+    expect(sent["action"]).toBe("userCommerceConfirm");
+  });
+
+  it("commerceChat sends action=commerceChat with message", async () => {
+    const sent = await getAction((b) => b.commerceChat("deal?"));
+    expect(sent["action"]).toBe("commerceChat");
+    expect(sent["message"]).toBe("deal?");
+  });
+
+  // ── Bank ─────────────────────────────────────────────────────────────────
+
+  it("moveBank sends action=moveBank with slot", async () => {
+    const sent = await getAction((b) => b.moveBank(2));
+    expect(sent["action"]).toBe("moveBank");
+    expect(sent["slot"]).toBe(2);
+  });
+
+  // ── Spells ───────────────────────────────────────────────────────────────
+
+  it("moveSpell sends action=moveSpell with from and to", async () => {
+    const sent = await getAction((b) => b.moveSpell(1, 5));
+    expect(sent["action"]).toBe("moveSpell");
+    expect(sent["from"]).toBe(1);
+    expect(sent["to"]).toBe(5);
+  });
+
+  // ── Forum ────────────────────────────────────────────────────────────────
+
+  it("forumPost sends action=forumPost with title and body", async () => {
+    const sent = await getAction((b) => b.forumPost("Hello", "World"));
+    expect(sent["action"]).toBe("forumPost");
+    expect(sent["title"]).toBe("Hello");
+    expect(sent["body"]).toBe("World");
+  });
+
+  // ── Friends ──────────────────────────────────────────────────────────────
+
+  it("addAmigo sends action=addAmigo with name", async () => {
+    const sent = await getAction((b) => b.addAmigo("Bot2"));
+    expect(sent["action"]).toBe("addAmigo");
+    expect(sent["name"]).toBe("Bot2");
+  });
+
+  it("delAmigo sends action=delAmigo with name", async () => {
+    const sent = await getAction((b) => b.delAmigo("Bot2"));
+    expect(sent["action"]).toBe("delAmigo");
+    expect(sent["name"]).toBe("Bot2");
+  });
+
+  it("onAmigos sends action=onAmigos", async () => {
+    const sent = await getAction((b) => b.onAmigos());
+    expect(sent["action"]).toBe("onAmigos");
+  });
+
+  it("msgAmigos sends action=msgAmigos with message", async () => {
+    const sent = await getAction((b) => b.msgAmigos("hi all"));
+    expect(sent["action"]).toBe("msgAmigos");
+    expect(sent["message"]).toBe("hi all");
+  });
+
+  // ── Misc ─────────────────────────────────────────────────────────────────
+
+  it("lookProcess sends action=lookProcess with name", async () => {
+    const sent = await getAction((b) => b.lookProcess("Bot2"));
+    expect(sent["action"]).toBe("lookProcess");
+    expect(sent["name"]).toBe("Bot2");
+  });
+
+  it("consultation sends action=consultation", async () => {
+    const sent = await getAction((b) => b.consultation());
+    expect(sent["action"]).toBe("consultation");
+  });
+
+  it("discord sends action=discord with code", async () => {
+    const sent = await getAction((b) => b.discord("abc123"));
+    expect(sent["action"]).toBe("discord");
+    expect(sent["code"]).toBe("abc123");
+  });
+
+  it("online sends action=online", async () => {
+    const sent = await getAction((b) => b.online());
+    expect(sent["action"]).toBe("online");
+  });
+
+  it("guildFundate sends action=guildFundate with guildName", async () => {
+    const sent = await getAction((b) => b.guildFundate("Los Lobos"));
+    expect(sent["action"]).toBe("guildFundate");
+    expect(sent["guildName"]).toBe("Los Lobos");
+  });
+
+  it("guildFundation sends action=guildFundation", async () => {
+    const sent = await getAction((b) => b.guildFundation());
+    expect(sent["action"]).toBe("guildFundation");
   });
 });
