@@ -146,14 +146,36 @@ s.mana / s.maxMana
 s.stamina / s.maxStamina
 s.gold            // gold carried
 s.exp             // total XP (this is what the benchmark measures)
+s.expNeeded       // XP required to reach next level (ELU)
 s.level           // character level
 s.clase           // class ID (see class table above)
 
 s.skills          // { Magia: { level: 0, exp: 0 }, Armas: { level: 3, exp: 120 }, ... }
+s.skillPts        // free skill points available to assign
+s.assignedSkills  // how many of the initial 10 points have been assigned (must reach 10 before natural training works)
+
+s.attributes      // { Fuerza: 18, Agilidad: 14, Inteligencia: 10, Carisma: 12, Constitucion: 16 }
+
 s.inventory       // [ { slot: 1, itemId: 21, name: "Espada de Hierro", amount: 1, equipped: true }, ... ]
+s.spells          // array of 35 slots: null or { slot, spellId, name, minSkill, manaCost }
+
+s.bankGold        // gold in the bank
+s.bank            // [ { slot, itemId, name, amount }, ... ] — bank inventory
+
 s.nearbyNpcs      // [ { id: 1, name: "Goblin", x: 51, y: 50, hp: 80, maxHp: 80, type: 5 }, ... ]
 s.nearbyPlayers   // [ { name: "OtherBot", x: 53, y: 50, hp: 100, maxHp: 100 }, ... ]
 s.statusEffects   // ["poisoned", "paralyzed", ...] — active debuffs
+
+s.faction         // "none" | "real" | "caos"
+s.reputation      // { npcKills, playerKills, citizensKilled, criminalsKilled }
+
+s.party           // null or { index, isLeader, members: ["Bot1", "Bot2"] }
+
+s.quests          // { active: [...], doneIds: [1, 3, 5] }
+                  // active item: { slot, questId, name, requiredLevel,
+                  //   npcProgress: [{ npcId, required, killed }],
+                  //   rewardXp, rewardGold }
+
 s.timestamp       // server timestamp in ms
 ```
 
@@ -245,6 +267,95 @@ await bot.bankEnd();
 await bot.partyCreate();
 await bot.partyMessage("Ready to fight!");
 // Other bots join with: await bot2.partyJoin("MyBot");
+await bot.partyAccept("Bot2");        // accept Bot2's join request
+await bot.partyKick("Bot2");          // kick member
+await bot.partySetLeader("Bot2");     // transfer leadership
+await bot.partyLeave();               // leave (distributes pooled XP)
+```
+
+### Quests
+
+```ts
+// Walk to the quest NPC, then interact:
+await bot.walkTo(QUEST_NPC_X, QUEST_NPC_Y);
+await bot.quest(QUEST_NPC_X, QUEST_NPC_Y);  // shows quest details
+await bot.questAccept();                     // accept the offered quest
+
+// Check progress in getState():
+const q = bot.getState().quests.active[0];
+console.log(q.name, q.npcProgress);   // [{ npcId, required, killed }]
+
+// Kill the required NPCs, then return and interact again to finish:
+await bot.walkTo(QUEST_NPC_X, QUEST_NPC_Y);
+await bot.quest(QUEST_NPC_X, QUEST_NPC_Y);  // finishes quest, grants XP
+
+// Other quest actions:
+await bot.questAbandon(1);            // abandon quest in slot 1
+await bot.questListRequest();         // refresh active/done quest list
+await bot.questDetailsRequest(1);     // get details for slot 1
+```
+
+Check `getState().quests.doneIds` to avoid retrying completed quests.
+
+### Skill points
+
+```ts
+// Must assign all 10 initial points before natural training works.
+// Check: getState().assignedSkills < 10 → call assignSkillPoints first.
+const s = bot.getState();
+if (s.assignedSkills < 10) {
+  await bot.assignSkillPoints({ Armas: 4, Defensa: 3, Tacticas: 3 });
+}
+```
+
+### Faction
+
+```ts
+await bot.enlist();       // join army (Royal Army or Chaos Legion depending on alignment)
+await bot.leaveFaction(); // resign from current army
+// Check current faction: getState().faction → "none" | "real" | "caos"
+```
+
+### Pets
+
+```ts
+await bot.petStand();    // order pet to stay
+await bot.petFollow();   // order pet to follow
+await bot.releasePet();  // free the pet
+```
+
+### Player-to-player trade
+
+```ts
+await bot.userCommerceCreate("OtherBot");  // initiate trade
+await bot.userCommerceOffer(3, 5, 0);      // offer 5 of inv slot 3, 0 gold
+await bot.userCommerceOk();                // confirm trade
+// or: await bot.userCommerceReject();     // reject
+await bot.userCommerceEnd();               // close trade window
+```
+
+### Combat challenges (duels)
+
+```ts
+await bot.fightSend("OtherBot", 100); // challenge with 100 gold wager
+await bot.fightAccept();              // accept incoming challenge
+```
+
+### Friends
+
+```ts
+await bot.addAmigo("OtherBot");   // add to friends list
+await bot.delAmigo("OtherBot");   // remove
+await bot.msgAmigos("Hey all!");  // message all online friends
+```
+
+### Crafting (artisan)
+
+```ts
+// Walk to artisan NPC, double-click to open their window, then:
+await bot.doubleClick(ARTISAN_X, ARTISAN_Y);
+await bot.initCrafting();
+await bot.craftsmanCreate(RECIPE_ITEM_ID);
 ```
 
 ### Lab log
@@ -588,20 +699,141 @@ Switch to a cheaper spell or meditate more frequently.
 ## Quick reference card
 
 ```
+─── State ───────────────────────────────────────────────────────────────────
 getState()                          → WorldState (cached, no network)
+  .pos .hp .mana .stamina .gold .exp .expNeeded .level .clase
+  .skills .skillPts .assignedSkills .attributes
+  .inventory .spells .bank .bankGold
+  .nearbyNpcs .nearbyPlayers .statusEffects
+  .faction .reputation .party .quests .timestamp
+
+─── Movement ────────────────────────────────────────────────────────────────
 walk("north"|"south"|"east"|"west") → move one tile
-walkTo(x, y)                        → walk to coordinates
-attack()                            → attack current/nearest target
-castSpell(slot)                     → cast spell in hotbar slot (1–35)
-useSkill("Talar"|"Minería"|...)     → use skill
-workLeftClick(x, y)                 → skill on specific tile
+walkTo(x, y)                        → walk to coordinates (loop, max 200 steps)
+changeHeading("north"|...)          → face direction without moving
+
+─── Combat ──────────────────────────────────────────────────────────────────
+attack()                            → attack current/nearest NPC
 leftClick(x, y)                     → target NPC/player at tile
-doubleClick(x, y)                   → interact (NPC dialogue, door)
-waitTicks(n)                        → wait n × 600ms
-meditate()                          → toggle mana regen (stand still)
+castSpell(slot)                     → cast hotbar spell (slot 1–35)
+useSpellMacro()                     → cast currently selected spell macro
+doubleClick(x, y)                   → interact with NPC/door/object at tile
+
+─── Skills & work ───────────────────────────────────────────────────────────
+useSkill("Ocultarse"|"pesca"|...)   → use skill (see skills.md for exact names)
+workLeftClick(x, y)                 → use work skill on specific tile (Talar, Mineria)
+assignSkillPoints({ Armas:4, ... }) → spend free skill points (must do first!)
+train(npcIndex, "Armas")            → train skill at a trainer NPC
+
+─── Items ───────────────────────────────────────────────────────────────────
+useItem(slot)                       → use item in inventory slot
+equipItem(slot)                     → equip item in inventory slot
+pickUp(x, y)                        → pick up item on the ground
+drop(slot, amount)                  → drop item from inventory
+moveItem(from, to)                  → rearrange inventory slots
+
+─── Character state ─────────────────────────────────────────────────────────
+meditate()                          → toggle mana regen (stand still, no movement)
 rest()                              → toggle HP regen
-say(msg)                            → public chat
-appendLabLog(text)                  → write persistent note
-bugReport(desc)                     → file a bug
+resucitate()                        → resurrect at Sacerdote NPC (must be dead)
+heal()                              → heal at Sacerdote NPC
+home()                              → teleport to home city
+
+─── Commerce (NPC shop) ─────────────────────────────────────────────────────
+commerceStart()                     → open NPC shop (target merchant with leftClick first)
+commerceBuy(slot, amount)           → buy from NPC shop slot
+commerceSell(slot, amount)          → sell from inventory slot
+commerceEnd()                       → close NPC shop
+commerceChat(msg)                   → chat during commerce
+
+─── Commerce (player trade) ─────────────────────────────────────────────────
+userCommerceCreate("OtherBot")      → initiate trade with player
+userCommerceOffer(slot, amount, gold) → offer item + gold
+userCommerceOk()                    → confirm trade
+userCommerceReject()                → reject trade
+userCommerceConfirm()               → final confirmation
+userCommerceEnd()                   → close trade window
+
+─── Bank ────────────────────────────────────────────────────────────────────
+bankStart()                         → open bank (target banker NPC first)
+bankDeposit(slot, amount)           → deposit item from inventory
+bankExtractItem(slot, amount)       → withdraw item from bank
+bankDepositGold(amount)             → deposit gold
+bankExtractGold(amount)             → withdraw gold
+bankEnd()                           → close bank
+moveBank(slot, fromBank?)           → move item between inv and bank
+
+─── Crafting ────────────────────────────────────────────────────────────────
+craftBlacksmith(itemId)             → craft at forge
+craftCarpenter(itemId)              → craft at carpenter bench
+initCrafting()                      → open artisan menu (doubleClick artisan first)
+craftsmanCreate(itemId)             → craft via artisan
+itemUpgrade(slot)                   → upgrade item at upgrade NPC
+
+─── Spells ──────────────────────────────────────────────────────────────────
+dragSpell(from, to)                 → move spell between hotbar slots
+moveSpell(from, to)                 → move spell (alternative)
+
+─── Quests ──────────────────────────────────────────────────────────────────
+quest(x, y)                         → interact with quest NPC (first=offer, second=finish)
+questAccept()                       → accept the offered quest
+questAbandon(slot)                  → abandon active quest by slot
+questListRequest()                  → refresh getState().quests
+questDetailsRequest(slot)           → get details for slot
+
+─── Party ───────────────────────────────────────────────────────────────────
+partyCreate()                       → create party (you become leader)
+partyJoin("leaderName")             → request to join a party
+partyAccept("memberName")           → accept join request (leader only)
+partyLeave()                        → leave party (distributes pooled XP)
+partyKick("memberName")             → kick member (leader only)
+partySetLeader("memberName")        → transfer leadership
+partyMessage("text")                → message all party members
+partyOnline()                       → list party members + XP
+
+─── Faction ─────────────────────────────────────────────────────────────────
+enlist()                            → join army (real or caos based on alignment)
+leaveFaction()                      → leave current army faction
+
+─── Pets ────────────────────────────────────────────────────────────────────
+petStand()                          → order pet to stay
+petFollow()                         → order pet to follow
+releasePet()                        → free the pet
+
+─── Duels ───────────────────────────────────────────────────────────────────
+fightSend("target", gold?)          → challenge player to duel
+fightAccept()                       → accept incoming duel
+
+─── Chat & social ───────────────────────────────────────────────────────────
+say(msg)                            → public chat in area
+yell(msg)                           → area-wide chat
+whisper("target", msg)              → private message
+guildMessage(msg)                   → guild chat
+addAmigo("name")                    → add friend
+delAmigo("name")                    → remove friend
+msgAmigos(msg)                      → message all online friends
+online()                            → request online player count
+lookProcess("name")                 → look up player info
+
+─── Misc ────────────────────────────────────────────────────────────────────
+changeDescription("text")           → set character description
+forumPost(title, body, type?)        → post to in-game forum (0=general,1=real,2=caos)
+guildFundate("name")                 → start guild founding
+guildFundation()                     → complete guild founding
+
+─── Utilities ───────────────────────────────────────────────────────────────
+waitTicks(n)                        → wait n × 600ms
+appendLabLog(text)                  → write persistent note to lab_log.md
+bugReport(desc)                     → file a bug (never throws)
 console.log("XP: " + s.exp)        → log XP for harness measurement
+
+─── GM only (require GM privileges) ─────────────────────────────────────────
+gmSpawn(npcId)  gmKillNpc(n)  gmKillAllNearby()
+gmCreateItem(id, amount?)  gmDestroyItems()
+gmGoToChar("name")  gmWarpChar("name",map,x,y)  gmWarpMe()  gmSummon("name")
+gmRevive("name")  gmKick("name")  gmBan("name","reason")  gmSilence("name")
+gmJail("name")  gmInvisible()  gmMessage(msg)  gmServerMessage(msg)  gmRain()
+gmTeleportCreate(map,x,y,dMap,dX,dY)  gmEditChar("name",field,value)
+gmSetDesc("name","desc")  gmCreateNpc(id)  gmMakeDumb("name")
+gmMakeDumbNoMore("name")  gmRequestCharInfo("name")
 ```

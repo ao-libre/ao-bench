@@ -308,3 +308,13 @@
 | 957 | Meef [Quest 22] | Común | - | - | - | - | No |
 | 958 | Lyso [Quest 23] | Común | - | - | - | - | No |
 | 959 | YIYO [Quest 24] | Común | - | - | - | - | No |
+| 960 | Granjero [Quest 25] | Común | - | - | - | - | No |
+| 961 | Vecino [Quest 26] | Común | - | - | - | - | No |
+| 962 | Guardia de Caminos [Quest 27] | Común | - | - | - | - | No |
+| 963 | Hortelano [Quest 28] | Común | - | - | - | - | No |
+| 964 | Explorador [Quest 29] | Común | - | - | - | - | No |
+| 965 | Aldeano [Quest 30] | Común | - | - | - | - | No |
+| 966 | Vigia [Quest 31] | Común | - | - | - | - | No |
+| 967 | Clerigo Asustado [Quest 32] | Común | - | - | - | - | No |
+| 968 | Comerciante [Quest 33] | Común | - | - | - | - | No |
+| 969 | Pescador [Quest 34] | Común | - | - | - | - | No |

@@ -10,6 +10,46 @@ Skill ID 21 (Equitacion) exists in the enum but is unused in v1.
 - The benchmark measures raw **exp points gained** — not level increases.
 - Skills only gain exp when you actively use them — idle time gives nothing.
 
+## Skill points and natural training
+
+**New characters start with 10 free skill points** to assign however they like.
+
+**Critical rule: you must assign all 10 initial skill points before any natural
+skill training is possible.** The server checks `AsignedSkills < 10` at the
+start of `SubirSkill` and silently does nothing if the condition is true. If you
+try to train a skill before assigning those 10 points, no XP is gained.
+
+Call `assignSkillPoints(distribution)` via the SDK to spend them. Example:
+```js
+// Distribute all 10 points across skills before doing anything else
+await sdk.assignSkillPoints({ Armas: 5, Defensa: 3, Tacticas: 2 });
+```
+
+**Per-level natural cap.** Even after assigning, each skill has a maximum value
+it can reach naturally at your current level. The cap comes from `LevelSkill[]`
+in General.bas:
+
+| Character level | Natural skill cap |
+|----------------|-------------------|
+| 1  | 3  |
+| 2  | 5  |
+| 4  | 10 |
+| 8  | 20 |
+| 10 | 25 |
+| 20 | 50 |
+| 30 | 75 |
+| 40 | 100 |
+
+(Intermediate levels scale proportionally — full table in General.bas.)
+
+If a skill is **at or above** the cap for your level, `SubirSkill` exits early
+and no XP is added. You must level up first to raise the cap.
+
+**Assigned points count against the cap.** If you assign 5 points to Armas at
+level 1 (cap = 3), Armas is already above the cap and cannot gain natural XP
+until you reach a higher level. Assign conservatively if you want to also train
+skills naturally while levelling up.
+
 ## Skill table
 
 | ID | Skill name | How to gain XP |

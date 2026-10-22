@@ -379,6 +379,191 @@ export class AOBot {
     return this.sendAction("dragSpell", { from, to });
   }
 
+  // ── New player actions (BotAPI v2) ───────────────────────────────────────
+
+  /** Assign free skill points. Must be called before natural training works.
+   *  distribution keys are exact skill names (e.g. "Armas", "Defensa").
+   *  Total points must not exceed getState().skillPts. */
+  assignSkillPoints(distribution: Partial<Record<SkillName, number>>): Promise<BotApiOkResponse> {
+    return this.sendAction("assignSkillPoints", { distribution });
+  }
+
+  /** Talk to a quest NPC. First call shows details + queues accept; second call
+   *  (when quest already active) finishes it and grants XP. Pass x,y of the NPC. */
+  quest(x: number, y: number): Promise<BotApiOkResponse> {
+    return this.sendAction("quest", { x, y });
+  }
+
+  /** Accept the quest that was just offered via quest(). */
+  questAccept(): Promise<BotApiOkResponse> {
+    return this.sendAction("questAccept", {});
+  }
+
+  /** Abandon an active quest by slot number (1-based, from getState().quests.active). */
+  questAbandon(slot: number): Promise<BotApiOkResponse> {
+    return this.sendAction("questAbandon", { slot });
+  }
+
+  /** Refresh the active + done quest list (updates getState().quests). */
+  questListRequest(): Promise<BotApiOkResponse> {
+    return this.sendAction("questListRequest", {});
+  }
+
+  /** Get details for a specific active quest by slot number. */
+  questDetailsRequest(slot: number): Promise<BotApiOkResponse> {
+    return this.sendAction("questDetailsRequest", { slot });
+  }
+
+  /** Accept a party join request from `member`. Leader only. */
+  partyAccept(member: string): Promise<BotApiOkResponse> {
+    return this.sendAction("partyAccept", { member });
+  }
+
+  /** Kick `member` from the party. Leader only. */
+  partyKick(member: string): Promise<BotApiOkResponse> {
+    return this.sendAction("partyKick", { member });
+  }
+
+  /** Transfer party leadership to `member`. */
+  partySetLeader(member: string): Promise<BotApiOkResponse> {
+    return this.sendAction("partySetLeader", { member });
+  }
+
+  /** List online party members and their XP. */
+  partyOnline(): Promise<BotApiOkResponse> {
+    return this.sendAction("partyOnline", {});
+  }
+
+  /** Request party formation info. */
+  requestPartyForm(): Promise<BotApiOkResponse> {
+    return this.sendAction("requestPartyForm", {});
+  }
+
+  /** Leave the current army faction (/RETIRAR). */
+  leaveFaction(): Promise<BotApiOkResponse> {
+    return this.sendAction("leaveFaction", {});
+  }
+
+  /** Order your pet to stand still. */
+  petStand(): Promise<BotApiOkResponse> {
+    return this.sendAction("petStand", {});
+  }
+
+  /** Order your pet to follow you. */
+  petFollow(): Promise<BotApiOkResponse> {
+    return this.sendAction("petFollow", {});
+  }
+
+  /** Free / release your pet. */
+  releasePet(): Promise<BotApiOkResponse> {
+    return this.sendAction("releasePet", {});
+  }
+
+  /** Upgrade an item at an upgrade NPC. `slot` = inventory slot of the item. */
+  itemUpgrade(slot: number): Promise<BotApiOkResponse> {
+    return this.sendAction("itemUpgrade", { slot });
+  }
+
+  /** Open the craftsman's crafting dialogue (after doubleClick on artisan NPC). */
+  initCrafting(): Promise<BotApiOkResponse> {
+    return this.sendAction("initCrafting", {});
+  }
+
+  /** Create an item via the craftsman. `item` = recipe/item index. */
+  craftsmanCreate(item: number): Promise<BotApiOkResponse> {
+    return this.sendAction("craftsmanCreate", { item });
+  }
+
+  /** Send a duel challenge to `target`. Optional `gold` wager. */
+  fightSend(target: string, gold = 0): Promise<BotApiOkResponse> {
+    return this.sendAction("fightSend", { target, gold });
+  }
+
+  /** Accept an incoming duel challenge. */
+  fightAccept(): Promise<BotApiOkResponse> {
+    return this.sendAction("fightAccept", {});
+  }
+
+  /** Initiate a player-to-player trade with `target`. */
+  userCommerceCreate(target: string): Promise<BotApiOkResponse> {
+    return this.sendAction("userCommerceCreate", { target });
+  }
+
+  /** Confirm the current player-to-player trade (both sides must confirm). */
+  userCommerceConfirm(): Promise<BotApiOkResponse> {
+    return this.sendAction("userCommerceConfirm", {});
+  }
+
+  /** Send a chat message during NPC commerce. */
+  commerceChat(message: string): Promise<BotApiOkResponse> {
+    return this.sendAction("commerceChat", { message });
+  }
+
+  /** Move an item between inventory and bank. `fromBank=true` = bank→inv. */
+  moveBank(slot: number, fromBank = false): Promise<BotApiOkResponse> {
+    return this.sendAction("moveBank", { slot, fromBank });
+  }
+
+  /** Move a spell between hotbar slots. */
+  moveSpell(from: number, to: number): Promise<BotApiOkResponse> {
+    return this.sendAction("moveSpell", { from, to });
+  }
+
+  /** Post a message to the in-game forum. `type`: 0=general, 1=real, 2=caos. */
+  forumPost(title: string, body: string, type = 0): Promise<BotApiOkResponse> {
+    return this.sendAction("forumPost", { title, body, type });
+  }
+
+  /** Add a player to your friends list. */
+  addAmigo(name: string): Promise<BotApiOkResponse> {
+    return this.sendAction("addAmigo", { name });
+  }
+
+  /** Remove a player from your friends list. */
+  delAmigo(name: string): Promise<BotApiOkResponse> {
+    return this.sendAction("delAmigo", { name });
+  }
+
+  /** List your online friends. */
+  onAmigos(): Promise<BotApiOkResponse> {
+    return this.sendAction("onAmigos", {});
+  }
+
+  /** Send a message to all online friends. */
+  msgAmigos(message: string): Promise<BotApiOkResponse> {
+    return this.sendAction("msgAmigos", { message });
+  }
+
+  /** Look up information about another character by name. */
+  lookProcess(name: string): Promise<BotApiOkResponse> {
+    return this.sendAction("lookProcess", { name });
+  }
+
+  /** Open the consultation / help panel. */
+  consultation(): Promise<BotApiOkResponse> {
+    return this.sendAction("consultation", {});
+  }
+
+  /** Link a Discord account. `code` = Discord auth code. */
+  discord(code: string): Promise<BotApiOkResponse> {
+    return this.sendAction("discord", { code });
+  }
+
+  /** Request the online player count. */
+  online(): Promise<BotApiOkResponse> {
+    return this.sendAction("online", {});
+  }
+
+  /** Start the guild founding process. `guildName` = desired guild name. */
+  guildFundate(guildName: string): Promise<BotApiOkResponse> {
+    return this.sendAction("guildFundate", { guildName });
+  }
+
+  /** Complete the guild founding (second step after guildFundate). */
+  guildFundation(): Promise<BotApiOkResponse> {
+    return this.sendAction("guildFundation", {});
+  }
+
   // ── GM actions (require GM privileges on the character) ──────────────────
 
   gmGoToChar(target: string): Promise<BotApiOkResponse> {
